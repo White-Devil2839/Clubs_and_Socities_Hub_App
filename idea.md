@@ -2,6 +2,8 @@ Clubs & Societies Hub
 1. Project Title
 
 Clubs & Societies Hub – A Mobile App for College Clubs & Events
+So when you say “Clubs and Societies Hub”, it means:
+📌 “One app where students can discover and engage with all clubs and societies of the college.”
 
 
 2.Divyansh –20204-B-02112006A
