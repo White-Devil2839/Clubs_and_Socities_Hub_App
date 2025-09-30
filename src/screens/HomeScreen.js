@@ -15,7 +15,7 @@ export default function HomeScreen({ navigation }) {
 
 	return (
 		<ScrollView style={{ flex: 1, backgroundColor: colors.background }} contentContainerStyle={{ padding: spacing.md }}>
-			<Text style={[typography.title, { marginBottom: spacing.sm }]}>Welcome to Clubs & Societies Hub 2</Text>
+			<Text style={[typography.title, { marginBottom: spacing.sm }]}>Welcome to Clubs & Societies Hub</Text>
 			<Text style={[typography.subtitle, { marginBottom: spacing.md }]}>Hello {user?.username || 'Guest'}</Text>
 
 			<FlatList
