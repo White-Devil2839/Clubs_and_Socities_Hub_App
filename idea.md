@@ -1,4 +1,4 @@
-Clubs & Societies Hub 2 – Idea.md
+Clubs & Societies Hub
 1. Project Title
 
 Clubs & Societies Hub – A Mobile App for College Clubs & Events
