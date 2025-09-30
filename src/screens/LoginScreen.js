@@ -35,7 +35,7 @@ export default function LoginScreen({ route }) {
 	return (
 		<KeyboardAvoidingView style={styles.container} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
 			<View style={[styles.card, shadow.light]}>
-				<Text style={[typography.title, { textAlign: 'center', marginBottom: spacing.sm }]}>Clubs & Societies Hub 2</Text>
+				<Text style={[typography.title, { textAlign: 'center', marginBottom: spacing.sm }]}>Clubs & Societies Hub</Text>
 				<Text style={[typography.label, { marginBottom: spacing.xs }]}>Username</Text>
 				<TextInput
 					style={styles.input}
