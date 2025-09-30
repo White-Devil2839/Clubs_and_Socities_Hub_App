@@ -1,12 +1,13 @@
 import React, { useContext, useEffect } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { getEventById } from '../data';
+import { DataContext } from '../context/DataContext';
 import { AuthContext } from '../context/AuthContext';
 import { colors, spacing, radius, shadow, typography } from '../theme';
 
 export default function EventDetailsScreen({ route, navigation }) {
 	const { id, event: eventParam } = route.params || {};
 	const { user } = useContext(AuthContext);
+	const { events } = useContext(DataContext);
 
 	useEffect(() => {
 		if (!user) {
@@ -16,7 +17,7 @@ export default function EventDetailsScreen({ route, navigation }) {
 
 	if (!user) return null;
 
-	const event = eventParam || getEventById(id);
+	const event = eventParam || events.find((e) => String(e.id) === String(id));
 	if (!event) {
 		return (
 			<View style={styles.container}>

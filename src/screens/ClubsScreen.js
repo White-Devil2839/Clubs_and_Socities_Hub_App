@@ -1,9 +1,10 @@
-import React, { useMemo, useState } from 'react';
+import React, { useContext, useMemo, useState } from 'react';
 import { View, Text, FlatList, TouchableOpacity, StyleSheet, TextInput } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Animated, { Easing, FadeInDown, useAnimatedStyle, useSharedValue, withDelay, withTiming } from 'react-native-reanimated';
 import { useNavigation } from '@react-navigation/native';
 import { colors, spacing, radius, shadow, typography } from '../theme';
+import { DataContext } from '../context/DataContext';
 
 const CLUBS = [
 	{
@@ -50,14 +51,16 @@ const CLUBS = [
 
 export default function ClubsScreen() {
 	const navigation = useNavigation();
+	const { clubs } = useContext(DataContext);
 	const [query, setQuery] = useState('');
 	const [favorites, setFavorites] = useState(new Set());
 
 	const filtered = useMemo(() => {
 		const q = query.trim().toLowerCase();
-		if (!q) return CLUBS;
-		return CLUBS.filter((c) => c.name.toLowerCase().includes(q) || c.description.toLowerCase().includes(q));
-	}, [query]);
+		const base = clubs && clubs.length ? clubs : CLUBS;
+		if (!q) return base;
+		return base.filter((c) => (c.name || '').toLowerCase().includes(q) || (c.description || c.desc || '').toLowerCase().includes(q));
+	}, [query, clubs]);
 	const toggleFav = (id) => {
 		setFavorites((prev) => {
 			const next = new Set(prev);
@@ -77,9 +80,9 @@ export default function ClubsScreen() {
 					<Ionicons name={favorites.has(item.id) ? 'star' : 'star-outline'} size={20} color={favorites.has(item.id) ? '#f59e0b' : '#9ca3af'} />
 				</TouchableOpacity>
 			</View>
-			<Text style={styles.cardDesc}>{item.description}</Text>
+			<Text style={styles.cardDesc}>{item.description || item.desc || ''}</Text>
 			<View style={styles.tags}>
-				{item.events.map((ev) => (
+				{(item.events || []).map((ev) => (
 					<View key={ev.id} style={styles.tag}><Text style={styles.tagText}>{ev.title}</Text></View>
 				))}
 			</View>

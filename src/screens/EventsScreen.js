@@ -2,12 +2,13 @@ import React, { useContext } from 'react';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { AuthContext } from '../context/AuthContext';
-import { events } from '../data';
+import { DataContext } from '../context/DataContext';
 import { colors, spacing, radius, shadow, typography } from '../theme';
 
 export default function EventsScreen() {
 	const navigation = useNavigation();
 	const { user } = useContext(AuthContext);
+	const { events, deleteEvent } = useContext(DataContext);
 
 	const handlePress = (id) => {
 		if (!user) {
@@ -30,6 +31,11 @@ export default function EventsScreen() {
 					<TouchableOpacity style={styles.button} onPress={() => handlePress(item.id)}>
 						<Text style={styles.buttonText}>View Details</Text>
 					</TouchableOpacity>
+					{user?.role === 'admin' ? (
+						<TouchableOpacity style={[styles.button, { backgroundColor: '#EF4444', marginTop: spacing.xs }]} onPress={() => deleteEvent(item.id)}>
+							<Text style={styles.buttonText}>Delete</Text>
+						</TouchableOpacity>
+					) : null}
 				</View>
 			)}
 		/>
