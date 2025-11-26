@@ -1,13 +1,22 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useMemo, useState } from 'react';
 import { View, Text, StyleSheet, TextInput, TouchableOpacity, FlatList, Modal, Pressable } from 'react-native';
 import { AuthContext } from '../context/AuthContext';
 import { colors, spacing, radius, shadow, typography } from '../theme';
 import { Ionicons } from '@expo/vector-icons';
 import { DataContext } from '../context/DataContext';
+import { MembershipContext } from '../context/MembershipContext';
 
 export default function AdminDashboardScreen() {
 	const { user } = useContext(AuthContext);
-    const { events, clubs, addEvent, deleteEvent, addClub, deleteClub, addEventToClub, deleteEventFromClub } = useContext(DataContext);
+	const { events, clubs, addEvent, deleteEvent, addClub, deleteClub, addEventToClub, deleteEventFromClub } = useContext(DataContext);
+	const {
+		members,
+		pendingMembers,
+		approveMember,
+		rejectMember,
+		assignRole,
+		resetPassword,
+	} = useContext(MembershipContext);
 	if (user?.role !== 'admin') {
 		return (
 			<View style={styles.containerDenied}>
@@ -17,7 +26,7 @@ export default function AdminDashboardScreen() {
 		);
 	}
 
-    const [activeSection, setActiveSection] = useState('events');
+	const [activeSection, setActiveSection] = useState('events');
     const [showEventModal, setShowEventModal] = useState(false);
     const [eventTitle, setEventTitle] = useState('');
     const [eventDate, setEventDate] = useState('');
@@ -30,25 +39,38 @@ export default function AdminDashboardScreen() {
     const [subEventDate, setSubEventDate] = useState('');
     const [showSubEventModal, setShowSubEventModal] = useState(false);
     const [subEventError, setSubEventError] = useState('');
-    const [currentClubId, setCurrentClubId] = useState('');
+	const [currentClubId, setCurrentClubId] = useState('');
+	const [selectedMember, setSelectedMember] = useState(null);
+	const [roleModalVisible, setRoleModalVisible] = useState(false);
+	const [passwordModalVisible, setPasswordModalVisible] = useState(false);
+	const [newRole, setNewRole] = useState('member');
+	const [newPassword, setNewPassword] = useState('');
+
+	const approvedMembers = useMemo(() => members.filter((m) => m.status === 'approved'), [members]);
 
     return (
         <View style={styles.container}>
             {/* Section toggles */}
-            <View style={styles.toggleRow}>
-                <TouchableOpacity
-                    style={[styles.toggleBtn, activeSection === 'events' && styles.toggleBtnActive]}
-                    onPress={() => setActiveSection('events')}
-                >
-                    <Text style={[styles.toggleText, activeSection === 'events' && styles.toggleTextActive]}>Manage Events</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                    style={[styles.toggleBtn, activeSection === 'clubs' && styles.toggleBtnActive]}
-                    onPress={() => setActiveSection('clubs')}
-                >
-                    <Text style={[styles.toggleText, activeSection === 'clubs' && styles.toggleTextActive]}>Manage Clubs</Text>
-                </TouchableOpacity>
-            </View>
+			<View style={styles.toggleRow}>
+				<TouchableOpacity
+					style={[styles.toggleBtn, activeSection === 'events' && styles.toggleBtnActive]}
+					onPress={() => setActiveSection('events')}
+				>
+					<Text style={[styles.toggleText, activeSection === 'events' && styles.toggleTextActive]}>Manage Events</Text>
+				</TouchableOpacity>
+				<TouchableOpacity
+					style={[styles.toggleBtn, activeSection === 'clubs' && styles.toggleBtnActive]}
+					onPress={() => setActiveSection('clubs')}
+				>
+					<Text style={[styles.toggleText, activeSection === 'clubs' && styles.toggleTextActive]}>Manage Clubs</Text>
+				</TouchableOpacity>
+				<TouchableOpacity
+					style={[styles.toggleBtn, activeSection === 'members' && styles.toggleBtnActive]}
+					onPress={() => setActiveSection('members')}
+				>
+					<Text style={[styles.toggleText, activeSection === 'members' && styles.toggleTextActive]}>Manage Members</Text>
+				</TouchableOpacity>
+			</View>
 
             {/* Manage Events container */}
             {activeSection === 'events' ? (
@@ -80,8 +102,8 @@ export default function AdminDashboardScreen() {
             </View>
             ) : null}
 
-            {/* Manage Clubs container */}
-            {activeSection === 'clubs' ? (
+			{/* Manage Clubs container */}
+			{activeSection === 'clubs' ? (
             <View style={[styles.section, shadow.light]}>
                 <View style={styles.sectionHeader}>
                     <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.xs }}>
@@ -124,7 +146,114 @@ export default function AdminDashboardScreen() {
                     )}
                 />
             </View>
-            ) : null}
+			) : null}
+
+			{/* Manage Members container */}
+			{activeSection === 'members' ? (
+				<View style={[styles.section, shadow.light]}>
+					<View style={styles.sectionHeader}>
+						<View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.xs }}>
+							<Ionicons name="people" size={20} color={colors.accent} />
+							<Text style={styles.sectionTitle}>Manage Members</Text>
+						</View>
+					</View>
+					<Text style={styles.sectionSubtitle}>Pending approvals</Text>
+					{pendingMembers.length === 0 ? (
+						<Text style={styles.meta}>No pending requests</Text>
+					) : (
+						pendingMembers.map((member) => (
+							<View key={member.id} style={[styles.row, shadow.light]}>
+								<View style={{ flex: 1 }}>
+									<Text style={styles.rowText}>{member.name} ({member.username})</Text>
+									<Text style={styles.meta}>{member.email}</Text>
+									<Text style={styles.meta}>Requested: {member.requestedRole || 'member'} · {member.requestedClubId ? `Club ${member.requestedClubId}` : 'No club'}</Text>
+								</View>
+								<View style={{ gap: spacing.xs, alignItems: 'flex-end' }}>
+									<TouchableOpacity onPress={() => approveMember(member.id)}>
+										<Ionicons name="checkmark-circle" size={22} color={colors.accent} />
+									</TouchableOpacity>
+									<TouchableOpacity onPress={() => rejectMember(member.id)}>
+										<Ionicons name="close-circle" size={22} color="#EF4444" />
+									</TouchableOpacity>
+								</View>
+							</View>
+						))
+					)}
+
+					<Text style={[styles.sectionSubtitle, { marginTop: spacing.md }]}>Active members</Text>
+					<FlatList
+						data={approvedMembers}
+						keyExtractor={(item) => item.id}
+						contentContainerStyle={{ paddingTop: spacing.sm, paddingBottom: spacing.xl }}
+						renderItem={({ item }) => (
+							<View style={[styles.row, shadow.light]}>
+								<View style={{ flex: 1 }}>
+                                    <Text style={styles.rowText}>{item.name} ({item.username})</Text>
+									<Text style={styles.meta}>{item.role} · {item.clubId ? `Club ${item.clubId}` : 'No club'}</Text>
+								</View>
+								<View style={{ gap: spacing.xs, alignItems: 'flex-end' }}>
+									<TouchableOpacity onPress={() => { setSelectedMember(item); setNewRole(item.role); setRoleModalVisible(true); }}>
+										<Ionicons name="swap-horizontal" size={22} color={colors.accent} />
+									</TouchableOpacity>
+									<TouchableOpacity onPress={() => { setSelectedMember(item); setNewPassword(''); setPasswordModalVisible(true); }}>
+										<Ionicons name="refresh" size={22} color="#2563eb" />
+									</TouchableOpacity>
+								</View>
+							</View>
+						)}
+					/>
+				</View>
+			) : null}
+            {/* Role Modal */}
+            <Modal transparent visible={roleModalVisible} animationType="fade" onRequestClose={() => setRoleModalVisible(false)}>
+                <Pressable style={styles.backdrop} onPress={() => setRoleModalVisible(false)} />
+                <View style={styles.modalCard}>
+                    <Text style={styles.modalTitle}>Assign Role</Text>
+                    <View style={styles.chipGroup}>
+                        {['member', 'leader', 'admin'].map((role) => (
+                            <TouchableOpacity key={role} style={[styles.chip, newRole === role && styles.chipActive]} onPress={() => setNewRole(role)}>
+                                <Text style={[styles.chipText, newRole === role && styles.chipTextActive]}>{role}</Text>
+                            </TouchableOpacity>
+                        ))}
+                    </View>
+                    <View style={styles.modalActions}>
+                        <TouchableOpacity style={[styles.button, { backgroundColor: '#6B7280' }]} onPress={() => setRoleModalVisible(false)}>
+                            <Text style={styles.buttonText}>Cancel</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity style={styles.button} onPress={() => {
+                            if (selectedMember) {
+                                assignRole(selectedMember.id, newRole);
+                            }
+                            setRoleModalVisible(false);
+                        }}>
+                            <Text style={styles.buttonText}>Save</Text>
+                        </TouchableOpacity>
+                    </View>
+                </View>
+            </Modal>
+
+            {/* Password Modal */}
+            <Modal transparent visible={passwordModalVisible} animationType="fade" onRequestClose={() => setPasswordModalVisible(false)}>
+                <Pressable style={styles.backdrop} onPress={() => setPasswordModalVisible(false)} />
+                <View style={styles.modalCard}>
+                    <Text style={styles.modalTitle}>Reset Password</Text>
+                    <TextInput placeholder="New password" placeholderTextColor={colors.muted} style={styles.input} value={newPassword} onChangeText={setNewPassword} secureTextEntry />
+                    <View style={styles.modalActions}>
+                        <TouchableOpacity style={[styles.button, { backgroundColor: '#6B7280' }]} onPress={() => setPasswordModalVisible(false)}>
+                            <Text style={styles.buttonText}>Cancel</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity style={styles.button} onPress={() => {
+                            if (!newPassword.trim()) return;
+                            if (selectedMember) {
+                                resetPassword(selectedMember.id, newPassword);
+                            }
+                            setPasswordModalVisible(false);
+                        }}>
+                            <Text style={styles.buttonText}>Save</Text>
+                        </TouchableOpacity>
+                    </View>
+                </View>
+            </Modal>
 
             {/* Add Event To Club Modal */}
             <Modal transparent visible={showSubEventModal} animationType="fade" onRequestClose={() => setShowSubEventModal(false)}>
@@ -218,6 +347,20 @@ const styles = StyleSheet.create({
     },
     panelHeader: { flexDirection: 'row', alignItems: 'center', gap: spacing.xs, marginBottom: spacing.sm },
     panelTitle: { ...typography.cardTitle },
+    section: {
+        backgroundColor: colors.card,
+        borderRadius: radius.lg,
+        padding: spacing.md,
+        marginBottom: spacing.md,
+    },
+    sectionHeader: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        marginBottom: spacing.sm,
+    },
+    sectionTitle: { ...typography.cardTitle },
+    sectionSubtitle: { ...typography.cardSubtitle, marginTop: spacing.sm },
     input: {
         backgroundColor: '#EEF2F7',
         borderRadius: radius.md,
@@ -263,6 +406,12 @@ const styles = StyleSheet.create({
     toggleTextActive: { color: colors.white },
     primaryCta: { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: colors.accent, paddingHorizontal: spacing.md, paddingVertical: spacing.sm, borderRadius: radius.lg },
     primaryCtaText: { ...typography.button },
+    meta: { color: colors.muted, fontSize: 12, marginTop: 2 },
+    chipGroup: { flexDirection: 'row', gap: spacing.xs, marginTop: spacing.sm },
+    chip: { paddingVertical: spacing.xs, paddingHorizontal: spacing.sm, borderRadius: radius.lg, backgroundColor: '#E5E7EB' },
+    chipActive: { backgroundColor: colors.accent },
+    chipText: { color: colors.text, fontWeight: '600' },
+    chipTextActive: { color: colors.white },
 });
 
 

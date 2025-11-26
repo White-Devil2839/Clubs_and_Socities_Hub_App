@@ -10,6 +10,45 @@ export const clubs = [
 	{ id: '3', name: 'Literary Society', desc: 'Writing, readings, and meetups.' },
 ];
 
+export const members = [
+	{
+		id: 'm-admin',
+		username: 'admin',
+		name: 'System Admin',
+		email: 'admin@campus.edu',
+		password: 'admin',
+		role: 'admin',
+		status: 'approved',
+		clubId: null,
+		requestedClubId: null,
+		requestedRole: 'admin',
+	},
+	{
+		id: 'm-ailead',
+		username: 'ailead',
+		name: 'Alex Leader',
+		email: 'leader@aiclub.edu',
+		password: 'leader123',
+		role: 'leader',
+		status: 'approved',
+		clubId: '1',
+		requestedClubId: '1',
+		requestedRole: 'leader',
+	},
+	{
+		id: 'm-photofan',
+		username: 'photofan',
+		name: 'Jamie Photo',
+		email: 'jamie@photo.edu',
+		password: 'member123',
+		role: 'member',
+		status: 'approved',
+		clubId: '2',
+		requestedClubId: '2',
+		requestedRole: 'member',
+	},
+];
+
 export function getEventById(id) {
 	return events.find((e) => e.id === String(id));
 }

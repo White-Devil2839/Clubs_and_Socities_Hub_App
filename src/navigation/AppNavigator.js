@@ -13,6 +13,8 @@ import ClubDetailsScreen from '../screens/ClubDetailsScreen';
 import EventDetailsScreen from '../screens/EventDetailsScreen';
 import EventsScreen from '../screens/EventsScreen';
 import AdminDashboardScreen from '../screens/AdminDashboardScreen';
+import MembersScreen from '../screens/MembersScreen';
+import SignupScreen from '../screens/SignupScreen';
 import { TouchableOpacity, Text } from 'react-native';
 import { colors, shadow } from '../theme';
 
@@ -62,6 +64,7 @@ export default function AppNavigator() {
 				<Tab.Screen name="Home" component={HomeScreen} />
 				<Tab.Screen name="Events" component={EventsScreen} />
 				<Tab.Screen name="Clubs" component={ClubsScreen} />
+				{user ? <Tab.Screen name="Members" component={MembersScreen} /> : null}
 				{user?.role === 'admin' ? <Tab.Screen name="Admin" component={AdminDashboardScreen} /> : null}
 			</Tab.Navigator>
 		);
@@ -79,6 +82,7 @@ export default function AppNavigator() {
 					),
 				})} />
 				<Stack.Screen name="Login" component={LoginScreen} options={{ title: 'Login' }} />
+				<Stack.Screen name="Signup" component={SignupScreen} options={{ title: 'Sign Up' }} />
 				<Stack.Screen name="ClubDetails" component={ClubDetailsScreen} options={{ title: 'Club Details' }} />
 				<Stack.Screen name="EventDetails" component={EventDetailsScreen} options={{ title: 'Event Details' }} />
 			</Stack.Navigator>

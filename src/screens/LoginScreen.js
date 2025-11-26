@@ -62,7 +62,10 @@ export default function LoginScreen({ route }) {
 					<Text style={styles.buttonText}>Log In</Text>
 				</TouchableOpacity>
 				<Text style={styles.link}>Forgot password?</Text>
-				<Text style={styles.hint}>Admin: admin/admin · Members: any other username/password</Text>
+				<TouchableOpacity onPress={() => navigation.navigate('Signup')}>
+					<Text style={[styles.link, { color: colors.accent, fontWeight: '600' }]}>Need an account? Sign up</Text>
+				</TouchableOpacity>
+				<Text style={styles.hint}>Admin: admin/admin · Leaders: ailead/leader123</Text>
 			</View>
 		</KeyboardAvoidingView>
 	);
