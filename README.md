@@ -73,5 +73,4 @@ Follow these steps to set up and run the project locally:
 Contributions are welcome! If you have suggestions or improvements, please feel free to submit a pull request.
 
 
-## Credits
 Developed by Divyansh Choudhary.
